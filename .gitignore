@@ -4,3 +4,7 @@ cabal-dev
 *.hi
 *.chi
 *.chs.h
+<<<<<<< HEAD
+=======
+.virthualenv
+>>>>>>> 7a67f9b74ef854635aa5d5996a3937aec1da0db0
