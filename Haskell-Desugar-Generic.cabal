@@ -1,0 +1,17 @@
+name:                Haskell-Desugar-Generic
+version:             0.1.0.0
+synopsis:            A library of transformations to desugar Haskell-Src-Exts AST
+-- description:         
+license:             BSD3
+license-file:        LICENSE
+author:              Shayan Najd
+maintainer:          shayan att chalmers dott se
+-- copyright:           
+category:            Language
+build-type:          Simple
+cabal-version:       >=1.8
+
+library
+  exposed-modules:     Language.Haskell.Exts.Desugar.Generic, Language.Haskell.Exts.Unique, Language.Haskell.Exts.Desugar.Conversion, Language.Haskell.Exts.Desugar.Generic.Pattern, Language.Haskell.Exts.Desugar.Basic, Language.Haskell.Exts.Desugar.Generic.Type, Language.Haskell.Exts.Desugar.Generic.Case, Language.Haskell.Exts.Desugar.Generic.Declaration, Language.Haskell.Exts.Desugar.Generic.Expression
+  -- other-modules:       
+  build-depends:       base , mtl ==2.1.*, haskell-src-exts ==1.13.*
