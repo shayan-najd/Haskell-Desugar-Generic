@@ -211,13 +211,19 @@ desugarCase (Case e altsi) = do
 desugarCase e = noDesugaring e      
  
 -- Haskell 2010 Report Section 3.14
-desugarDo (Do []) = error "Empty do block!"
-desugarDo (Do ((Qualifier e):[])) = return e
-desugarDo (Do ( _           :[])) = 
+desugarDo = _desugarDo False
+
+desugarDo_MonoLocalBind ::  Desugaring Exp
+desugarDo_MonoLocalBind = _desugarDo True
+
+_desugarDo :: Bool -> Desugaring Exp
+_desugarDo _ (Do [])                 = error "Empty do block!"
+_desugarDo _ (Do ((Qualifier e):[])) = return e
+_desugarDo _ (Do ( _           :[])) = 
   error "The last statement in a 'do' block must be an expression!"
-desugarDo (Do ((Qualifier e):ss)) = do
+_desugarDo _ (Do ((Qualifier e):ss)) = do
   return $ InfixApp e (QVarOp (UnQual (Symbol ">>"))) (Do ss)    
-desugarDo (Do ((Generator _ p e):stmts)) = do
+_desugarDo False (Do ((Generator _ p e):stmts)) = do
   ok <- newVar
   return $ Let 
     (BDecls 
@@ -234,11 +240,28 @@ desugarDo (Do ((Generator _ p e):stmts)) = do
     (InfixApp e 
      (QVarOp (UnQual (Symbol ">>="))) 
      (Var (UnQual (Ident ok))))
-desugarDo (Do ((LetStmt bs):ss)) =   
+
+_desugarDo True (Do ((Generator _ (PVar n) e):stmts)) = do
+  return $ InfixApp e 
+    (QVarOp (UnQual (Symbol ">>="))) 
+    (Lambda noLoc [PVar n] (Do stmts)) 
+      
+_desugarDo True (Do ((Generator _ p e):stmts)) = do
+  x <- newVar
+  return $ InfixApp e (QVarOp (UnQual (Symbol ">>="))) 
+    (Lambda noLoc [PVar $ Ident x] 
+     (Case (Var $ UnQual $ Ident x) 
+      [Alt noLoc p         (UnGuardedAlt (Do stmts)) 
+       emptyBind
+      ,Alt noLoc PWildCard (UnGuardedAlt (App (Var (UnQual (Ident "fail"))) 
+                                          (Lit (String "...")))) 
+       emptyBind]))
+  
+_desugarDo _ (Do ((LetStmt bs):ss)) =   
   return $ Let bs (Do ss)
-desugarDo (Do ((RecStmt _) : (_ : _))) =
+_desugarDo _ (Do ((RecStmt _) : (_ : _))) =
   error "not supported yet!" --ToDo 
-desugarDo e = noDesugaring e
+_desugarDo _ e = noDesugaring e
 
 desugarMDo = notSupported
 

@@ -1,4 +1,6 @@
 {-# LANGUAGE PatternGuards #-}
+{-# LANGUAGE NoMonomorphismRestriction,MonoLocalBinds #-}
+
 module XMonad.StackSet
        (StackSet(..), Workspace(..), Screen(..), Stack(..),
         RationalRect(..), new, view, greedyView, lookupWorkspace, screens,

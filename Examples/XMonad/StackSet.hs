@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternGuards #-}
+{-# LANGUAGE NoMonomorphismRestriction,MonoLocalBinds #-}
 
 -- Taken from: https://raw.github.com/shayan-najd/StackSet/master/XMonad/StackSet.hs
 -----------------------------------------------------------------------------

@@ -3,7 +3,6 @@ import Language.Haskell.Exts
 import System.IO.Unsafe
 import Language.Haskell.Exts.Desugar.Generic
 import Data.Data
-import Data.Generics.Schemes
 import Data.Set
 import Control.Monad
 
@@ -41,14 +40,23 @@ stackSet_no_Do          = unUnique $ genericM desugarDo       stackSet
 -- App, Lambda, Case, Let, Lit, Con and RecUpdate)
 
 -- stackset without all the syntactic sugar (expression and pattern)
-stackSet_bitter = unUnique $ (genericM desugarListComp >=>     
-                              genericM desugarDo >=>
-                              genericM desugarEnumFrom >=>
-                              genericM desugarLeftSection >=>
-                              genericM desugarRightSection >=>
-                              genericM desugarList >=>
-                              genericM desugarIf >=>
-                              genericM desugarInfixApp) stackSet
+stackSet_bitter = unUnique $ (    genericM desugarFunBind 
+                              >=> genericM desugarListComp      
+                              >=> genericM desugarDo_MonoLocalBind 
+                              >=> genericM desugarEnumFrom 
+                              >=> genericM desugarLeftSection 
+                              >=> genericM desugarRightSection 
+                              >=> genericM desugarList 
+                              >=> genericM desugarIf 
+                              >=> genericM desugarTuple  
+                              >=> genericM desugarInfixApp 
+                              >=> genericM desugarPInfixApp 
+                              >=> genericM desugarPList 
+                              >=> genericM desugarPTuple 
+-- commented because of a bug in the pretty printer
+--                              >=> genericM desugarPParen 
+--                              >=> genericM desugarParen 
+                              ) stackSet
  
 -- Too check the constructors in stackSet_bitter, we use the following
 -- generic definitions:
@@ -56,8 +64,10 @@ stackSet_bitter = unUnique $ (genericM desugarListComp >=>
 -- returning the name of the top-level expression constructors 
 gShowConstr :: Data a => a -> String
 gShowConstr x = if (typeOf x `elem` 
-                    [typeOf (undefined :: Exp)
---                  ,typeOf (undefined :: Pat)
+                    [
+                    typeOf (undefined :: Exp)
+--                    ,typeOf (undefined :: Pat)
+--                    ,typeOf (undefined :: Decl)
                     ]) 
                 then showConstr . toConstr $ x
                 else ""
